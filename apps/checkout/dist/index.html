@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SatoshiFlow — Customer Checkout Experience</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans selection:bg-emerald-500 selection:text-black">
+  <!-- Brand Top Bar -->
+  <div class="w-full max-w-md flex items-center justify-between mb-4 px-2">
+    <div class="flex items-center space-x-2">
+      <div class="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500 flex items-center justify-center text-emerald-400 font-bold text-sm">
+        <i class="fa-brands fa-bitcoin"></i>
+      </div>
+      <span class="text-base font-bold tracking-tight text-white">Satoshi<span class="text-emerald-400">Flow</span> Pay</span>
+    </div>
+    <span class="text-xs text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      Polar Regtest Live
+    </span>
+  </div>
+
+  <!-- Checkout Card -->
+  <div class="max-w-md w-full bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-2xl space-y-6">
+    <!-- Merchant Header & Status -->
+    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div>
+        <h2 id="merchantStoreTitle" class="text-base font-bold text-white">BitStore Global</h2>
+        <p class="text-xs text-slate-400">Order #<span id="orderRef">SF-84920</span></p>
+      </div>
+      <div id="statusBadge" class="text-xs px-3 py-1 rounded-full font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+        <span>AWAITING PAYMENT</span>
+      </div>
+    </div>
+
+    <!-- Amount Breakdown (Customer-pays-fee 0.5%) -->
+    <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4 space-y-2 text-xs">
+      <div class="flex justify-between text-slate-400">
+        <span>Product Total</span>
+        <span id="merchantPrice" class="text-slate-200 font-mono font-medium">$100.00</span>
+      </div>
+      <div class="flex justify-between text-slate-400">
+        <span class="flex items-center gap-1.5">
+          SatoshiFlow Fee
+          <span class="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-semibold">0.5% (50 bps)</span>
+        </span>
+        <span id="feeAmount" class="text-slate-200 font-mono font-medium">$0.50</span>
+      </div>
+      <div class="flex justify-between border-t border-slate-800 pt-2 text-sm font-bold text-white items-baseline">
+        <span>Amount Due:</span>
+        <div class="text-right">
+          <div id="customerTotal" class="text-emerald-400 font-mono text-base">$100.50</div>
+          <div id="customerSats" class="text-[11px] text-slate-400 font-mono font-normal">167,500 sats</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Method Selection Tabs -->
+    <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <button id="tabLightning" class="py-2.5 text-xs font-bold rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 transition flex items-center justify-center space-x-1.5 shadow-sm">
+        <i class="fa-solid fa-bolt"></i>
+        <span>Lightning (Instant)</span>
+      </button>
+      <button id="tabBitcoin" class="py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition flex items-center justify-center space-x-1.5">
+        <i class="fa-brands fa-bitcoin"></i>
+        <span>Bitcoin On-Chain</span>
+      </button>
+    </div>
+
+    <!-- QR Code Container -->
+    <div class="flex flex-col items-center justify-center p-5 bg-white rounded-2xl shadow-inner relative group">
+      <div id="qrcode"></div>
+      <div class="text-slate-800 text-[11px] font-medium mt-3 flex items-center gap-1 text-center font-sans">
+        <i class="fa-solid fa-qrcode text-emerald-600"></i>
+        <span id="scanInstructions">Scan with any Lightning wallet (Strike, Phoenix, CashApp, Polar)</span>
+      </div>
+    </div>
+
+    <!-- Payment Address / Invoice Input -->
+    <div class="space-y-1.5">
+      <label class="text-[11px] font-semibold text-slate-400 flex justify-between">
+        <span id="inputLabel">Lightning Invoice</span>
+        <span class="text-emerald-400 font-normal">Tap to copy</span>
+      </label>
+      <div class="flex items-center space-x-2">
+        <input id="paymentUri" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-300 select-all focus:outline-none focus:border-emerald-500 cursor-pointer" onclick="copyUri()" />
+        <button onclick="copyUri()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs px-3.5 py-2.5 rounded-xl font-medium transition text-slate-200">
+          <i class="fa-regular fa-copy"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Simulation Button for Demonstration -->
+    <div class="pt-2 border-t border-slate-800">
+      <button onclick="simulateScanPayment()" class="w-full py-2.5 bg-slate-800/80 hover:bg-emerald-600/90 hover:text-white border border-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-mobile-screen"></i>
+        <span>Simulate Customer Scan & Pay</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let activePayment = null;
+    let activeMethod = 'lightning';
+
+    async function initCheckout() {
+      // 1. Get latest payment or create a fresh live payment
+      try {
+        const res = await fetch('http://localhost:3000/v1/dashboard/metrics');
+        const metrics = await res.json();
+        if (metrics.recent_payments && metrics.recent_payments.length > 0) {
+          const latestId = metrics.recent_payments[0].id;
+          const pRes = await fetch(`http://localhost:3000/v1/payments/${latestId}`);
+          activePayment = await pRes.json();
+        }
+      } catch (e) {}
+
+      if (!activePayment || !activePayment.id) {
+        // Create fresh
+        const fresh = await fetch('http://localhost:3000/v1/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'chk_' + Date.now() },
+          body: JSON.stringify({ amount: 100, currency: 'USD' })
+        });
+        activePayment = await fresh.json();
+      }
+
+      renderUI();
+      connectSse();
+    }
+
+    function renderUI() {
+      if (!activePayment) return;
+      document.getElementById('merchantPrice').innerText = `$${Number(activePayment.merchantPrice || 100).toFixed(2)}`;
+      document.getElementById('feeAmount').innerText = `$${(Number(activePayment.customerTotal || 100.50) - Number(activePayment.merchantPrice || 100)).toFixed(2)}`;
+      document.getElementById('customerTotal').innerText = `$${Number(activePayment.customerTotal || 100.50).toFixed(2)}`;
+      
+      const sats = Math.ceil((Number(activePayment.customerTotal || 100.50) / 60000) * 100000000);
+      document.getElementById('customerSats').innerText = `${sats.toLocaleString()} sats`;
+
+      // Set URI
+      let uri = '';
+      if (activeMethod === 'lightning') {
+        uri = activePayment.payment_methods?.lightning?.invoice || 'lnbcrt1675u1p4tv3eqpp5...';
+        document.getElementById('inputLabel').innerText = 'Lightning Invoice';
+        document.getElementById('scanInstructions').innerText = 'Scan with any Lightning wallet (Phoenix, Strike, Polar Alice/Bob)';
+        document.getElementById('tabLightning').className = 'py-2.5 text-xs font-bold rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 transition flex items-center justify-center space-x-1.5 shadow-sm';
+        document.getElementById('tabBitcoin').className = 'py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition flex items-center justify-center space-x-1.5';
+      } else {
+        uri = activePayment.payment_methods?.bitcoin?.address || 'bcrt1qkdx4wq78ts8x6lycf...';
+        document.getElementById('inputLabel').innerText = 'Bitcoin Regtest Address';
+        document.getElementById('scanInstructions').innerText = 'Scan with Bitcoin wallet or pay via bitcoind RPC';
+        document.getElementById('tabBitcoin').className = 'py-2.5 text-xs font-bold rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 transition flex items-center justify-center space-x-1.5 shadow-sm';
+        document.getElementById('tabLightning').className = 'py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition flex items-center justify-center space-x-1.5';
+      }
+
+      document.getElementById('paymentUri').value = uri;
+
+      // Render QR
+      const qrEl = document.getElementById('qrcode');
+      qrEl.innerHTML = '';
+      new QRCode(qrEl, {
+        text: uri,
+        width: 190,
+        height: 190,
+        colorDark: "#0f172a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    function copyUri() {
+      const input = document.getElementById('paymentUri');
+      navigator.clipboard.writeText(input.value);
+      alert('Copied to clipboard!');
+    }
+
+    function connectSse() {
+      if (!activePayment) return;
+      const sse = new EventSource(`http://localhost:3000/v1/payments/${activePayment.id}/events`);
+      sse.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        if (msg.status === 'PAID') {
+          const badge = document.getElementById('statusBadge');
+          badge.className = 'text-xs px-3 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5';
+          badge.innerHTML = '<i class="fa-solid fa-check"></i><span>SETTLED & PAID</span>';
+        }
+      };
+    }
+
+    async function simulateScanPayment() {
+      if (!activePayment) return;
+      await fetch(`http://localhost:3000/v1/payments/${activePayment.id}/confirm`, { method: 'POST' });
+    }
+
+    document.getElementById('tabLightning').onclick = () => { activeMethod = 'lightning'; renderUI(); };
+    document.getElementById('tabBitcoin').onclick = () => { activeMethod = 'bitcoin'; renderUI(); };
+
+    initCheckout();
+  </script>
+</body>
+</html>

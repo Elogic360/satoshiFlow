@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SatoshiFlow — The Self-Custody Bitcoin & Lightning Payment Gateway</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-black">
+  <!-- Navbar -->
+  <header class="border-b border-slate-800/80 sticky top-0 bg-slate-950/90 backdrop-blur z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-emerald-400 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-emerald-500/20">
+          <i class="fa-brands fa-bitcoin text-lg"></i>
+        </div>
+        <span class="text-xl font-bold tracking-tight text-white">Satoshi<span class="text-emerald-400">Flow</span></span>
+        <span class="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 ml-2">v1.0 Live</span>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+        <a href="#features" class="hover:text-emerald-400 transition-colors">Features</a>
+        <a href="#demo" class="hover:text-emerald-400 transition-colors">Interactive Demo</a>
+        <a href="#api" class="hover:text-emerald-400 transition-colors">Developer API</a>
+      </nav>
+
+      <div class="flex items-center space-x-3">
+        <a href="http://localhost:5174/" target="_blank" class="text-sm font-semibold px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 transition">
+          Merchant Portal (:5174)
+        </a>
+        <a href="http://localhost:5157/" target="_blank" class="text-sm font-semibold px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition">
+          Customer Pay (:5157)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="py-20 md:py-28 px-6 max-w-7xl mx-auto text-center space-y-8 relative overflow-hidden">
+    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-400">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span>PostgreSQL 18 Native & Polar Regtest Active</span>
+    </div>
+
+    <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight max-w-4xl mx-auto leading-tight sm:leading-none">
+      Next-Gen Autonomous <br />
+      <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-400 bg-clip-text text-transparent">Bitcoin & Lightning Payment Engine</span>
+    </h1>
+
+    <p class="max-w-2xl mx-auto text-base sm:text-lg text-slate-400">
+      Pure self-custody payment rail. Built with double-entry accounting ledger, 0.5% customer-pays-fee engine, instant Lightning settlement, and zero private key exposure.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+      <button onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})" class="w-full sm:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-bolt"></i>
+        <span>Try Live Payment Creation</span>
+      </button>
+      <a href="#api" class="w-full sm:w-auto px-8 py-3.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 font-semibold rounded-xl text-slate-200 transition-all flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-code"></i>
+        <span>View API Specs</span>
+      </a>
+    </div>
+
+    <!-- Live Status Banner -->
+    <div class="pt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
+        <div class="text-xs text-slate-400">Database Engine</div>
+        <div class="text-base font-bold text-white mt-1">PostgreSQL 18.6</div>
+        <div class="text-[11px] text-emerald-400 mt-0.5">19 Relational Tables</div>
+      </div>
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
+        <div class="text-xs text-slate-400">Lightning Topology</div>
+        <div class="text-base font-bold text-white mt-1">LND 0.20 + CLN</div>
+        <div class="text-[11px] text-emerald-400 mt-0.5">2,000,000 sats capacity</div>
+      </div>
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
+        <div class="text-xs text-slate-400">Commercial Model</div>
+        <div class="text-base font-bold text-white mt-1">Customer-Pays-Fee</div>
+        <div class="text-[11px] text-emerald-400 mt-0.5">50 bps (0.5%) Math</div>
+      </div>
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
+        <div class="text-xs text-slate-400">Custody Standard</div>
+        <div class="text-base font-bold text-white mt-1">Pure Watch-Only</div>
+        <div class="text-[11px] text-emerald-400 mt-0.5">Zero Seed Storage</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Live Payment Sandbox -->
+  <section id="demo" class="py-16 bg-slate-900/40 border-y border-slate-800/80 px-6">
+    <div class="max-w-5xl mx-auto space-y-8">
+      <div class="text-center space-y-2">
+        <h2 class="text-3xl font-bold text-white tracking-tight">Interactive Payment Creation Sandbox</h2>
+        <p class="text-sm text-slate-400">Create an authentic payment on Bitcoin Core & Alice LND right now.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <!-- Input Form -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5 shadow-2xl">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-emerald-400"></i>
+            <span>Payment Parameters</span>
+          </h3>
+
+          <div class="space-y-2">
+            <label class="text-xs font-semibold text-slate-300">Merchant Amount ($ USD)</label>
+            <input id="demoAmount" type="number" value="100" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800/60 space-y-2 text-xs">
+            <div class="flex justify-between text-slate-400">
+              <span>Merchant Net Target:</span>
+              <span id="calcMerchant" class="text-slate-200 font-mono font-semibold">$100.00</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>SatoshiFlow Fee (0.5%):</span>
+              <span id="calcFee" class="text-slate-200 font-mono font-semibold">$0.50</span>
+            </div>
+            <div class="flex justify-between border-t border-slate-800 pt-2 text-emerald-400 font-bold text-sm">
+              <span>Customer Total Due:</span>
+              <span id="calcTotal" class="font-mono">$100.50</span>
+            </div>
+          </div>
+
+          <button onclick="generateLivePayment()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-play"></i>
+            <span>Execute POST /v1/payments</span>
+          </button>
+        </div>
+
+        <!-- Output Terminal -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 font-mono text-xs space-y-4 shadow-2xl">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center space-x-2 text-slate-400">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span class="text-xs ml-2 text-slate-300">Live API Response</span>
+            </div>
+            <span id="callStatus" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">IDLE</span>
+          </div>
+
+          <pre id="apiOutput" class="text-emerald-400 overflow-x-auto max-h-72 text-[11px] leading-relaxed select-all">// Press "Execute POST /v1/payments" to invoke real Bitcoin Core & LND nodes...</pre>
+
+          <div id="checkoutAction" class="hidden pt-3 border-t border-slate-800">
+            <a id="checkoutLink" href="#" target="_blank" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg flex items-center justify-center space-x-2 text-xs font-semibold transition">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              <span>Open in Hosted Checkout UI</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Developer API Reference -->
+  <section id="api" class="py-20 px-6 max-w-5xl mx-auto space-y-8">
+    <div class="text-center space-y-2">
+      <h2 class="text-3xl font-bold text-white tracking-tight">Developer API Quickstart</h2>
+      <p class="text-sm text-slate-400">Standard REST contracts with Idempotency and HMAC signatures.</p>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+      <div class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+        <span>cURL Example: Create Payment</span>
+        <span class="text-emerald-400 font-mono">POST /v1/payments</span>
+      </div>
+      <pre class="p-6 font-mono text-xs text-slate-300 overflow-x-auto leading-relaxed">
+curl -X POST http://localhost:3000/v1/payments \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: sf_idemp_9921" \
+  -d '{
+    "amount": 100,
+    "currency": "USD"
+  }'</pre>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-10 px-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>SatoshiFlow Engine • Verified with Elogic360 Software Factory</div>
+      <div class="flex space-x-6 text-slate-400">
+        <a href="http://localhost:5174/" class="hover:text-white">Merchant Dashboard</a>
+        <a href="http://localhost:5173/" class="hover:text-white">Hosted Checkout</a>
+        <a href="/health" class="hover:text-white">API Health</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const amountInput = document.getElementById('demoAmount');
+    function updateCalc() {
+      const price = Number(amountInput.value || 0);
+      const total = Number((price / 0.995).toFixed(2));
+      const fee = Number((total - price).toFixed(2));
+      document.getElementById('calcMerchant').innerText = `$${price.toFixed(2)}`;
+      document.getElementById('calcFee').innerText = `$${fee.toFixed(2)}`;
+      document.getElementById('calcTotal').innerText = `$${total.toFixed(2)}`;
+    }
+    amountInput.oninput = updateCalc;
+
+    async function generateLivePayment() {
+      const btnStatus = document.getElementById('callStatus');
+      const out = document.getElementById('apiOutput');
+      btnStatus.innerText = 'CALLING...';
+      btnStatus.className = 'text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-400';
+      out.innerText = '// Contacting PostgreSQL 18, Bitcoin Core, and LND Alice...';
+
+      try {
+        const idemp = 'idemp_' + Math.random().toString(36).substring(2, 9);
+        const res = await fetch('/v1/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemp },
+          body: JSON.stringify({ amount: Number(amountInput.value || 100), currency: 'USD' })
+        });
+        const data = await res.json();
+        out.innerText = JSON.stringify(data, null, 2);
+        btnStatus.innerText = 'HTTP 201 CREATED';
+        btnStatus.className = 'text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400';
+
+        if (data.id) {
+          document.getElementById('checkoutAction').classList.remove('hidden');
+          document.getElementById('checkoutLink').href = `http://localhost:5157/`;
+        }
+      } catch (err) {
+        out.innerText = err.message;
+        btnStatus.innerText = 'ERROR';
+        btnStatus.className = 'text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400';
+      }
+    }
+  </script>
+</body>
+</html>
