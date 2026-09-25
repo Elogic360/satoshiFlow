@@ -1,0 +1,260 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users            User[]
+  stores           Store[]
+  apiKeys          ApiKey[]
+  wallets          Wallet[]
+  feePolicies      FeePolicy[]
+  ledgerAccounts   LedgerAccount[]
+  webhookEndpoints WebhookEndpoint[]
+  auditLogs        AuditLog[]
+}
+
+model User {
+  id             String       @id @default(uuid())
+  organizationId String
+  email          String       @unique
+  passwordHash   String
+  role           String       @default("MEMBER")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  auditLogs    AuditLog[]
+}
+
+model Store {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  currency       String       @default("USD")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  products     Product[]
+  orders       Order[]
+}
+
+model ApiKey {
+  id             String       @id @default(uuid())
+  organizationId String
+  keyHash        String       @unique
+  prefix         String       // e.g., sf_test_, sf_live_
+  scopes         String[]     // e.g., ["read:payments", "write:payments"]
+  isLive         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  expiresAt      DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  storeId     String
+  name        String
+  description String?
+  price       Decimal  // Exact price in store currency
+  currency    String   @default("USD")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  store  Store   @relation(fields: [storeId], references: [id])
+  orders Order[]
+}
+
+model Order {
+  id             String   @id @default(uuid())
+  storeId        String
+  productId      String?
+  customerEmail  String?
+  amount         Decimal  // Amount in store currency
+  currency       String
+  status         String   @default("PENDING") // PENDING, PAID, CANCELLED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  store    Store     @relation(fields: [storeId], references: [id])
+  product  Product?  @relation(fields: [productId], references: [id])
+  payments Payment[]
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  orderId        String
+  idempotencyKey String?  @unique
+  amount         Decimal  // Target amount in fiat/base currency
+  currency       String
+  merchantPrice  Decimal  // Target amount before fees
+  customerTotal  Decimal  // Target amount including fees
+  status         String   @default("CREATED") // CREATED, QUOTED, PAYMENT_READY, PAYMENT_DETECTED, CONFIRMING, PAID, ACCOUNTED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  order           Order            @relation(fields: [orderId], references: [id])
+  quotes          Quote[]
+  paymentAttempts PaymentAttempt[]
+}
+
+model Quote {
+  id              String   @id @default(uuid())
+  paymentId       String
+  exchangeRate    Decimal
+  satoshiAmount   BigInt   // Exact amount in satoshis
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id])
+}
+
+model PaymentAttempt {
+  id             String   @id @default(uuid())
+  paymentId      String
+  txHash         String?
+  amountPaidSat  BigInt?
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  payment Payment @relation(fields: [paymentId], references: [id])
+}
+
+model Wallet {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  type           String   // ONCHAIN, LIGHTNING
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  walletAddresses WalletAddress[]
+}
+
+model WalletAddress {
+  id        String   @id @default(uuid())
+  walletId  String
+  address   String   @unique // BTC address or Lightning invoice
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+}
+
+model FeePolicy {
+  id             String   @id @default(uuid())
+  organizationId String
+  feeType        String   // CUSTOMER_PAYS, MERCHANT_PAYS
+  basisPoints    Int      @default(50) // 0.5% = 50 bps
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  feeObligations FeeObligation[]
+}
+
+model FeeObligation {
+  id             String   @id @default(uuid())
+  feePolicyId    String
+  paymentId      String
+  amountSat      BigInt
+  createdAt      DateTime @default(now())
+
+  feePolicy FeePolicy @relation(fields: [feePolicyId], references: [id])
+}
+
+model LedgerAccount {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  currency       String   // BTC, USD, EUR, TZS, USDC
+  type           String   // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+  balance        Decimal  @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization  Organization   @relation(fields: [organizationId], references: [id])
+  debitEntries  LedgerEntry[]  @relation("DebitEntries")
+  creditEntries LedgerEntry[]  @relation("CreditEntries")
+}
+
+model LedgerEntry {
+  id              String   @id @default(uuid())
+  debitAccountId  String
+  creditAccountId String
+  amount          Decimal  // Decimal for fiat, exact precision
+  amountSat       BigInt?  // If BTC, exact satoshis
+  referenceId     String?  // E.g., paymentId
+  description     String?
+  createdAt       DateTime @default(now())
+
+  debitAccount  LedgerAccount @relation("DebitEntries", fields: [debitAccountId], references: [id])
+  creditAccount LedgerAccount @relation("CreditEntries", fields: [creditAccountId], references: [id])
+}
+
+model WebhookEndpoint {
+  id             String   @id @default(uuid())
+  organizationId String
+  url            String
+  secret         String   // For HMAC SHA256 signatures
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  deliveries   WebhookDelivery[]
+}
+
+model WebhookEvent {
+  id        String   @id @default(uuid())
+  type      String   // e.g., payment.paid
+  payload   Json
+  createdAt DateTime @default(now())
+
+  deliveries WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id                String   @id @default(uuid())
+  webhookEndpointId String
+  webhookEventId    String
+  status            String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  statusCode        Int?
+  attempts          Int      @default(0)
+  nextAttemptAt     DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  endpoint WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
+  event    WebhookEvent    @relation(fields: [webhookEventId], references: [id])
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String?
+  action         String
+  entityType     String
+  entityId       String
+  details        Json?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User?        @relation(fields: [userId], references: [id])
+}

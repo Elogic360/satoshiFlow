@@ -1,0 +1,7 @@
+software-factory/
+node_modules/
+.factory/
+*.log
+*.pid
+.env
+.env.*
